@@ -64,12 +64,42 @@ describe('Dashboard & User Management API', () => {
       .send({
         fullName: 'New Test Engineer',
         email: uniqueEmail,
-        password: 'password123',
+        password: 'SecureP@ss123',
         roleId: 3 // EMPLOYEE
       });
 
     expect(res.statusCode).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.data.email).toBe(uniqueEmail);
+  });
+
+  it('POST /api/users - should reject a password with no uppercase, number, or special character', async () => {
+    const res = await request(app)
+      .post('/api/users')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        fullName: 'Weak Password User',
+        email: `weakpass_${Date.now()}@tracker.com`,
+        password: 'password123',
+        roleId: 3
+      });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.success).toBe(false);
+  });
+
+  it('POST /api/users - should reject a password shorter than 8 characters', async () => {
+    const res = await request(app)
+      .post('/api/users')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        fullName: 'Short Password User',
+        email: `shortpass_${Date.now()}@tracker.com`,
+        password: 'Ab1!',
+        roleId: 3
+      });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.success).toBe(false);
   });
 });

@@ -13,8 +13,16 @@ const createUserRules = [
     .withMessage('Please provide a valid email address.')
     .normalizeEmail(),
   body('password')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters long.'),
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters long.')
+    .matches(/[a-z]/)
+    .withMessage('Password must contain at least one lowercase letter.')
+    .matches(/[A-Z]/)
+    .withMessage('Password must contain at least one uppercase letter.')
+    .matches(/[0-9]/)
+    .withMessage('Password must contain at least one number.')
+    .matches(/[^A-Za-z0-9]/)
+    .withMessage('Password must contain at least one special character.'),
   body('roleId')
     .isInt({ min: 1, max: 3 })
     .withMessage('Role ID must be 1 (ADMIN), 2 (MANAGER), or 3 (EMPLOYEE).')
