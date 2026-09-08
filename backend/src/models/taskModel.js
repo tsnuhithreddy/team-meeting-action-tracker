@@ -53,8 +53,10 @@ class TaskModel {
     return rows[0] || null;
   }
 
-  // Find all tasks with optional filtering (meetingId, status, priority, assigneeId, overdue)
-  static async findAll({ meetingId, status, priority, assigneeId, overdue }) {
+  // Find all tasks with optional filtering. requesterId/requesterRole scope
+  // results for EMPLOYEE callers to tasks they're assigned to or whose
+  // meeting they participated in (mirrors MeetingModel.findAll).
+  static async findAll({ meetingId, status, priority, assigneeId, overdue, requesterId, requesterRole }) {
     let sql = `
       SELECT 
         t.id, 
@@ -101,6 +103,14 @@ class TaskModel {
     }
     if (overdue === 'true' || overdue === true) {
       sql += ` AND t.due_date < CURDATE() AND t.status != 'COMPLETED' `;
+    }
+
+    if (requesterRole === 'EMPLOYEE') {
+      sql += ` AND (t.assignee_id = ? OR EXISTS (
+        SELECT 1 FROM meeting_participants mp
+        WHERE mp.meeting_id = t.meeting_id AND mp.user_id = ?
+      )) `;
+      params.push(requesterId, requesterId);
     }
 
     sql += ` ORDER BY t.due_date ASC, t.created_at DESC `;

@@ -16,7 +16,7 @@ exports.addComment = catchAsync(async (req, res) => {
 });
 
 exports.getCommentsByTask = catchAsync(async (req, res) => {
-  const comments = await CommentService.getCommentsByTaskId(Number(req.params.id));
+  const comments = await CommentService.getCommentsByTaskId(Number(req.params.id), req.user);
 
   res.status(200).json({
     success: true,

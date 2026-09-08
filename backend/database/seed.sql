@@ -34,6 +34,21 @@ INSERT INTO tasks (id, meeting_id, title, description, assignee_id, priority, st
 (3, 1, 'Write API Integration Test Suite', 'Create Supertest test cases for RBAC and meeting endpoints.', 4, 'MEDIUM', 'OPEN', DATE_ADD(CURDATE(), INTERVAL 5 DAY), 2)
 ON DUPLICATE KEY UPDATE title=VALUES(title);
 
+-- Second meeting used to test access-control scoping: Charlie is deliberately
+-- NOT a participant here and NOT assigned task 4.
+INSERT INTO meetings (id, title, description, meeting_date, start_time, end_time, location_or_link, created_by) VALUES
+(2, 'Client Escalation Review', 'Private discussion on the Acme Corp support escalation.', CURDATE(), '14:00:00', '15:00:00', 'Zoom', 2)
+ON DUPLICATE KEY UPDATE title=VALUES(title);
+
+INSERT INTO meeting_participants (meeting_id, user_id) VALUES
+(2, 2),
+(2, 3)
+ON DUPLICATE KEY UPDATE meeting_id=VALUES(meeting_id);
+
+INSERT INTO tasks (id, meeting_id, title, description, assignee_id, priority, status, due_date, created_by) VALUES
+(4, 2, 'Prepare Acme Corp Incident Report', 'Summarize root cause and remediation steps for the client.', 3, 'HIGH', 'OPEN', DATE_ADD(CURDATE(), INTERVAL 3 DAY), 2)
+ON DUPLICATE KEY UPDATE title=VALUES(title);
+
 -- Insert Sample Comment
 INSERT INTO task_comments (id, task_id, user_id, comment_text) VALUES
 (1, 2, 3, 'Working on the JWT signing payload and token expiration config.')

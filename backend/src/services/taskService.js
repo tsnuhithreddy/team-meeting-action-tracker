@@ -50,9 +50,22 @@ class TaskService {
     return await TaskModel.findById(taskId);
   }
 
-  // Get tasks with filtering
-  static async getAllTasks(filters) {
-    return await TaskModel.findAll(filters);
+  // Authorization: can this user access this task?
+  // ADMIN/MANAGER can access any task. EMPLOYEE can access it only if they're
+  // the assignee or a participant of the task's parent meeting.
+  static async canAccessTask(task, user) {
+    if (user.role === 'ADMIN' || user.role === 'MANAGER') return true;
+    if (task.assignee_id === user.id) return true;
+    return await MeetingModel.isParticipant(task.meeting_id, user.id);
+  }
+
+  // Get tasks with filtering, scoped to the requester's role
+  static async getAllTasks(filters, user) {
+    return await TaskModel.findAll({
+      ...filters,
+      requesterId: user.id,
+      requesterRole: user.role
+    });
   }
 
   // Get tasks for current logged-in employee
@@ -60,11 +73,14 @@ class TaskService {
     return await TaskModel.findByAssignee(userId);
   }
 
-  // Get single task by ID
-  static async getTaskById(taskId) {
+  // Get single task by ID, enforcing access control
+  static async getTaskById(taskId, user) {
     const task = await TaskModel.findById(taskId);
     if (!task) {
       throw new AppError('Task not found.', 404);
+    }
+    if (!(await this.canAccessTask(task, user))) {
+      throw new AppError('You do not have access to this task.', 403);
     }
     return task;
   }

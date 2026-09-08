@@ -4,6 +4,7 @@ const app = require('../src/app');
 describe('Task Comments & Activity Logs API', () => {
   let employeeBobToken;
   let managerAliceToken;
+  let employeeCharlieToken;
 
   beforeAll(async () => {
     const bobRes = await request(app)
@@ -15,6 +16,11 @@ describe('Task Comments & Activity Logs API', () => {
       .post('/api/auth/login')
       .send({ email: 'alice@tracker.com', password: 'password123' });
     managerAliceToken = aliceRes.body.token;
+
+    const charlieRes = await request(app)
+      .post('/api/auth/login')
+      .send({ email: 'charlie@tracker.com', password: 'password123' });
+    employeeCharlieToken = charlieRes.body.token;
   });
 
   it('POST /api/tasks/:id/comments - should allow employee to post a comment on a task', async () => {
@@ -48,6 +54,25 @@ describe('Task Comments & Activity Logs API', () => {
     expect(res.body.success).toBe(true);
     expect(Array.isArray(res.body.data)).toBe(true);
     expect(res.body.data.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('GET /api/tasks/:id/comments - should forbid Charlie from viewing comments on a task outside his meetings', async () => {
+    const res = await request(app)
+      .get('/api/tasks/4/comments')
+      .set('Authorization', `Bearer ${employeeCharlieToken}`);
+
+    expect(res.statusCode).toBe(403);
+    expect(res.body.success).toBe(false);
+  });
+
+  it('POST /api/tasks/:id/comments - should forbid Charlie from commenting on a task outside his meetings', async () => {
+    const res = await request(app)
+      .post('/api/tasks/4/comments')
+      .set('Authorization', `Bearer ${employeeCharlieToken}`)
+      .send({ commentText: 'Trying to comment on a task I should not have access to.' });
+
+    expect(res.statusCode).toBe(403);
+    expect(res.body.success).toBe(false);
   });
 
   it('GET /api/activity - should fetch system activity log for Manager', async () => {

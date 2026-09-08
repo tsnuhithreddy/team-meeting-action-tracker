@@ -140,6 +140,13 @@ class MeetingModel {
     await query(sql, [title, description || null, meetingDate, startTime, endTime, locationOrLink || null, id]);
   }
 
+  // Check whether a given user is a participant of a given meeting
+  static async isParticipant(meetingId, userId) {
+    const sql = `SELECT 1 FROM meeting_participants WHERE meeting_id = ? AND user_id = ? LIMIT 1`;
+    const [rows] = await query(sql, [meetingId, userId]);
+    return rows.length > 0;
+  }
+
   // Delete meeting (cascades to tasks and participants)
   static async delete(id) {
     const sql = `DELETE FROM meetings WHERE id = ?`;

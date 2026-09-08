@@ -1,5 +1,6 @@
 const CommentModel = require('../models/commentModel');
 const TaskModel = require('../models/taskModel');
+const TaskService = require('./taskService');
 const AppError = require('../utils/appError');
 const { query } = require('../config/db');
 
@@ -10,6 +11,11 @@ class CommentService {
     const task = await TaskModel.findById(taskId);
     if (!task) {
       throw new AppError('Task not found.', 404);
+    }
+
+    // 1b. Verify requester has access to this task before letting them comment
+    if (!(await TaskService.canAccessTask(task, user))) {
+      throw new AppError('You do not have access to comment on this task.', 403);
     }
 
     // 2. Insert comment
@@ -29,10 +35,14 @@ class CommentService {
   }
 
   // Get comments for a task
-  static async getCommentsByTaskId(taskId) {
+  // Get comments for a task
+  static async getCommentsByTaskId(taskId, user) {
     const task = await TaskModel.findById(taskId);
     if (!task) {
       throw new AppError('Task not found.', 404);
+    }
+    if (!(await TaskService.canAccessTask(task, user))) {
+      throw new AppError('You do not have access to view comments on this task.', 403);
     }
     return await CommentModel.findByTaskId(taskId);
   }

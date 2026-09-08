@@ -8,19 +8,16 @@ describe('Task Management & Business Rules API', () => {
   let createdTaskId;
 
   beforeAll(async () => {
-    // Log in Manager Alice
     const managerRes = await request(app)
       .post('/api/auth/login')
       .send({ email: 'alice@tracker.com', password: 'password123' });
     managerToken = managerRes.body.token;
 
-    // Log in Employee Bob (id: 3)
     const bobRes = await request(app)
       .post('/api/auth/login')
       .send({ email: 'bob@tracker.com', password: 'password123' });
     employeeBobToken = bobRes.body.token;
 
-    // Log in Employee Charlie (id: 4)
     const charlieRes = await request(app)
       .post('/api/auth/login')
       .send({ email: 'charlie@tracker.com', password: 'password123' });
@@ -35,7 +32,7 @@ describe('Task Management & Business Rules API', () => {
         meetingId: 1,
         title: 'Write Unit Tests for Task Service',
         description: 'Ensure 100% test coverage for state machine rules.',
-        assigneeId: 3, // Assigned to Bob
+        assigneeId: 3,
         priority: 'HIGH',
         dueDate: '2026-11-01'
       });
@@ -83,6 +80,85 @@ describe('Task Management & Business Rules API', () => {
     expect(res.body.message).toContain('You can only update the status of tasks assigned to you');
   });
 
+  
+  describe('PUT /api/tasks/:id - full update validation', () => {
+    it('should allow Manager to fully update a task with a valid payload', async () => {
+      const res = await request(app)
+        .put(`/api/tasks/${createdTaskId}`)
+        .set('Authorization', `Bearer ${managerToken}`)
+        .send({
+          title: 'Write Unit Tests for Task Service (revised)',
+          description: 'Updated scope after review.',
+          assigneeId: 3,
+          priority: 'CRITICAL',
+          status: 'IN_PROGRESS',
+          dueDate: '2026-11-15'
+        });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.title).toBe('Write Unit Tests for Task Service (revised)');
+      expect(res.body.data.priority).toBe('CRITICAL');
+    });
+
+    it('should reject a full update missing the required priority field with 400, not a raw DB error', async () => {
+      const res = await request(app)
+        .put(`/api/tasks/${createdTaskId}`)
+        .set('Authorization', `Bearer ${managerToken}`)
+        .send({
+          title: 'Missing priority field',
+          status: 'OPEN',
+          dueDate: '2026-11-15'
+        });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.success).toBe(false);
+    });
+
+    it('should reject a full update with an invalid priority value', async () => {
+      const res = await request(app)
+        .put(`/api/tasks/${createdTaskId}`)
+        .set('Authorization', `Bearer ${managerToken}`)
+        .send({
+          title: 'Invalid priority value',
+          priority: 'SUPER_URGENT',
+          status: 'OPEN',
+          dueDate: '2026-11-15'
+        });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.success).toBe(false);
+    });
+
+    it('should reject a full update missing the required title field', async () => {
+      const res = await request(app)
+        .put(`/api/tasks/${createdTaskId}`)
+        .set('Authorization', `Bearer ${managerToken}`)
+        .send({
+          priority: 'LOW',
+          status: 'OPEN',
+          dueDate: '2026-11-15'
+        });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.success).toBe(false);
+    });
+
+    it('should still forbid Employee from calling PUT at all (RBAC unchanged)', async () => {
+      const res = await request(app)
+        .put(`/api/tasks/${createdTaskId}`)
+        .set('Authorization', `Bearer ${employeeBobToken}`)
+        .send({
+          title: 'Employee should not reach this',
+          priority: 'LOW',
+          status: 'OPEN',
+          dueDate: '2026-11-15'
+        });
+
+      expect(res.statusCode).toBe(403);
+    });
+  });
+
   it('GET /api/tasks/my-tasks - should return only tasks assigned to Bob', async () => {
     const res = await request(app)
       .get('/api/tasks/my-tasks')
@@ -92,5 +168,43 @@ describe('Task Management & Business Rules API', () => {
     expect(res.body.success).toBe(true);
     expect(Array.isArray(res.body.data)).toBe(true);
     expect(res.body.data.some((t) => t.id === createdTaskId)).toBe(true);
+  });
+
+  describe('Access control on tasks outside a user\'s meetings', () => {
+    it('GET /api/tasks/4 - should forbid Charlie from viewing a task in a meeting he is not part of', async () => {
+      const res = await request(app)
+        .get('/api/tasks/4')
+        .set('Authorization', `Bearer ${employeeCharlieToken}`);
+
+      expect(res.statusCode).toBe(403);
+      expect(res.body.success).toBe(false);
+    });
+
+    it('GET /api/tasks - should NOT include task 4 in Charlie\'s task list', async () => {
+      const res = await request(app)
+        .get('/api/tasks')
+        .set('Authorization', `Bearer ${employeeCharlieToken}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data.some((t) => t.id === 4)).toBe(false);
+    });
+
+    it('GET /api/tasks/4 - should allow Bob to view it (he is the assignee)', async () => {
+      const res = await request(app)
+        .get('/api/tasks/4')
+        .set('Authorization', `Bearer ${employeeBobToken}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data.id).toBe(4);
+    });
+
+    it('GET /api/tasks/4 - should allow Manager Alice to view it regardless of assignment', async () => {
+      const res = await request(app)
+        .get('/api/tasks/4')
+        .set('Authorization', `Bearer ${managerToken}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data.id).toBe(4);
+    });
   });
 });

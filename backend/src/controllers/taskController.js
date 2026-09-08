@@ -11,7 +11,7 @@ exports.createTask = catchAsync(async (req, res) => {
 });
 
 exports.getAllTasks = catchAsync(async (req, res) => {
-  const tasks = await TaskService.getAllTasks(req.query);
+  const tasks = await TaskService.getAllTasks(req.query, req.user);
   res.status(200).json({
     success: true,
     count: tasks.length,
@@ -29,7 +29,7 @@ exports.getMyTasks = catchAsync(async (req, res) => {
 });
 
 exports.getTaskById = catchAsync(async (req, res) => {
-  const task = await TaskService.getTaskById(Number(req.params.id));
+  const task = await TaskService.getTaskById(Number(req.params.id), req.user);
   res.status(200).json({
     success: true,
     data: task
