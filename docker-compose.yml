@@ -7,8 +7,8 @@ services:
     container_name: tracker-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: team_meeting_tracker
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
     ports:
       - "3306:3306"
     volumes:
@@ -38,9 +38,9 @@ services:
       DB_HOST: db
       DB_PORT: 3306
       DB_USER: root
-      DB_PASSWORD: rootpassword
-      DB_NAME: team_meeting_tracker
-      JWT_SECRET: production_super_secret_jwt_key_98765
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: 7d
       CLIENT_URL: http://localhost:80
     depends_on:
