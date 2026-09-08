@@ -1,8 +1,8 @@
 const express = require('express');
 const taskController = require('../controllers/taskController');
-const commentController = require('../controllers/commentController'); // <-- Add this
-const { createTaskRules, updateStatusRules, validate } = require('../validators/taskValidator');
-const { addCommentRules, validate: validateComment } = require('../validators/commentValidator'); // <-- Add this
+const commentController = require('../controllers/commentController');
+const { createTaskRules, updateTaskRules, updateStatusRules, validate } = require('../validators/taskValidator');
+const { addCommentRules, validate: validateComment } = require('../validators/commentValidator');
 const authenticateToken = require('../middleware/authMiddleware');
 const { authorizeRoles } = require('../middleware/roleMiddleware');
 
@@ -15,7 +15,7 @@ router.get('/my-tasks', taskController.getMyTasks);
 router.get('/', taskController.getAllTasks);
 router.post('/', authorizeRoles('ADMIN', 'MANAGER'), createTaskRules, validate, taskController.createTask);
 router.get('/:id', taskController.getTaskById);
-router.put('/:id', authorizeRoles('ADMIN', 'MANAGER'), taskController.updateTask);
+router.put('/:id', authorizeRoles('ADMIN', 'MANAGER'), updateTaskRules, validate, taskController.updateTask);
 router.patch('/:id/status', updateStatusRules, validate, taskController.updateTaskStatus);
 router.delete('/:id', authorizeRoles('ADMIN', 'MANAGER'), taskController.deleteTask);
 
