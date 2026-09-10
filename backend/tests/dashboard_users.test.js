@@ -102,4 +102,51 @@ describe('Dashboard & User Management API', () => {
     expect(res.statusCode).toBe(400);
     expect(res.body.success).toBe(false);
   });
+
+  describe('Deactivation revokes access immediately, not just at next login', () => {
+    it('should reject a still-cryptographically-valid token once the user is deactivated', async () => {
+      // 1. Admin creates a disposable test user (never touching Bob/Alice/Charlie,
+      //    since other test files depend on those accounts staying active)
+      const uniqueEmail = `deactivate_test_${Date.now()}@tracker.com`;
+      const createRes = await request(app)
+        .post('/api/users')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          fullName: 'Soon To Be Deactivated',
+          email: uniqueEmail,
+          password: 'SecureP@ss123',
+          roleId: 3
+        });
+      expect(createRes.statusCode).toBe(201);
+      const newUserId = createRes.body.data.id;
+
+      // 2. That user logs in and gets a valid, unexpired JWT
+      const loginRes = await request(app)
+        .post('/api/auth/login')
+        .send({ email: uniqueEmail, password: 'SecureP@ss123' });
+      expect(loginRes.statusCode).toBe(200);
+      const staleToken = loginRes.body.token;
+
+      // 3. Confirm the fresh token genuinely works before deactivation
+      const beforeRes = await request(app)
+        .get('/api/tasks/my-tasks')
+        .set('Authorization', `Bearer ${staleToken}`);
+      expect(beforeRes.statusCode).toBe(200);
+
+      // 4. Admin deactivates the user
+      const deactivateRes = await request(app)
+        .delete(`/api/users/${newUserId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(deactivateRes.statusCode).toBe(200);
+
+      // 5. The SAME, still-unexpired token must now be rejected —
+      // proving revocation is enforced on every request, not just at login
+      const afterRes = await request(app)
+        .get('/api/tasks/my-tasks')
+        .set('Authorization', `Bearer ${staleToken}`);
+      expect(afterRes.statusCode).toBe(403);
+      expect(afterRes.body.success).toBe(false);
+      expect(afterRes.body.message).toContain('deactivated');
+    });
+  });
 });
