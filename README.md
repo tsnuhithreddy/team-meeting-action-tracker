@@ -1,6 +1,6 @@
 # Team Meeting & Action Tracker
 
-A production-grade full-stack enterprise collaboration platform designed to eliminate meeting follow-up decay and track accountability. Built with a decoupled 3-tier architecture, MySQL relational database, strict Role-Based Access Control (RBAC), domain business rule enforcement, comprehensive audit logging, automated test suites, and GitHub Actions CI.
+A full-stack team collaboration app for scheduling meetings, assigning action items, and tracking follow-through. Built with a 3-tier architecture, MySQL, role-based access control, and an automated test suite running in GitHub Actions CI.
 
 ---
 
@@ -26,7 +26,7 @@ A production-grade full-stack enterprise collaboration platform designed to elim
 | **Database** | MySQL 8.0+ (InnoDB, Parameterized Queries via `mysql2/promise`) |
 | **Authentication** | JSON Web Tokens (JWT), `bcryptjs` (Cost factor 10) |
 | **Validation** | `express-validator` |
-| **Testing** | Jest, Supertest, React Testing Library |
+| **Testing** | Jest, Supertest |
 | **API Docs** | Swagger / OpenAPI (`swagger-ui-express`) |
 | **CI/CD** | GitHub Actions |
 
@@ -53,13 +53,11 @@ Team Meeting And Action Tracker/
 │   └── tests/                     # Jest + Supertest test suites
 ├── frontend/                      # React SPA (Vite)
 │   ├── src/
-│   │   ├── components/            # Reusable UI & domain components
-│   │   ├── context/               # AuthContext & NotificationContext
-│   │   ├── hooks/                 # Custom React hooks
-│   │   ├── pages/                 # Full-page views
-│   │   ├── routes/                # Protected routes & router tree
-│   │   ├── services/              # Axios/Fetch API client
-│   │   └── styles/                # CSS3 design system & styling
+│   │   ├── components/            # Reusable UI components (Navbar, Sidebar)
+│   │   ├── context/                # AuthContext
+│   │   ├── pages/                  # Full-page views
+│   │   ├── services/               # Fetch-based API client
+│   │   └── styles/                 # CSS3 design system & styling
 └── README.md
 ```
 
