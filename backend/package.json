@@ -38,6 +38,7 @@
   },
   "jest": {
     "testEnvironment": "node",
+    "setupFilesAfterEnv": ["<rootDir>/tests/jest.setup.js"],
     "coveragePathIgnorePatterns": [
       "/node_modules/"
     ]

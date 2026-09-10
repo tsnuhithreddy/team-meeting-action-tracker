@@ -10,6 +10,7 @@ jobs:
   backend-test:
     name: Backend Test Suite (Jest & Supertest)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     services:
       mysql:
