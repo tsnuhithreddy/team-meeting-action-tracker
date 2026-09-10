@@ -1,5 +1,3 @@
-USE team_meeting_tracker;
-
 -- Insert Default Roles
 INSERT INTO roles (id, name, description) VALUES
 (1, 'ADMIN', 'System administrator with full access'),

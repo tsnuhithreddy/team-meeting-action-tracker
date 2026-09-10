@@ -1,10 +1,3 @@
--- Create database if it doesn't exist
-CREATE DATABASE IF NOT EXISTS team_meeting_tracker
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-USE team_meeting_tracker;
-
 -- 1. ROLES TABLE
 -- Lookup table to define user roles
 CREATE TABLE IF NOT EXISTS roles (
