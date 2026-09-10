@@ -1,4 +1,12 @@
 require('dotenv').config();
+
+// Fail fast: refuse to start rather than silently signing/verifying tokens
+// with a hardcoded fallback secret that's visible to anyone reading the code.
+if (!process.env.JWT_SECRET) {
+  console.error('FATAL ERROR: JWT_SECRET environment variable is required but not set.');
+  process.exit(1);
+}
+
 const app = require('./app');
 
 const PORT = process.env.PORT || 5000;
