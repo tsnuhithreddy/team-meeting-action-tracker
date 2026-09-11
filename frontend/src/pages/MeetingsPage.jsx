@@ -33,7 +33,7 @@ export default function MeetingsPage() {
     loadMeetings();
     // Load users for participant selection if Manager/Admin
     if (user?.role !== 'EMPLOYEE') {
-      apiRequest('/users')
+      apiRequest('/users?activeOnly=true')
         .then((res) => {
           if (res.success) setUsersList(res.data);
         })
