@@ -53,12 +53,11 @@ Team Meeting And Action Tracker/
 │   └── tests/                     # Jest + Supertest test suites
 ├── frontend/                      # React SPA (Vite)
 │   ├── src/
-│   │   ├── components/            # Reusable UI & domain components
-│   │   ├── context/               # AuthContext
-│   │   ├── pages/                 # Full-page views
-│   │   ├── routes/                # Protected routes & router tree
-│   │   ├── services/              # Axios/Fetch API client
-│   │   └── styles/                # CSS3 design system & styling
+│   │   ├── components/            # Reusable UI components (Navbar, Sidebar)
+│   │   ├── context/                # AuthContext
+│   │   ├── pages/                  # Full-page views
+│   │   ├── services/               # Fetch-based API client
+│   │   └── styles/                 # CSS3 design system & styling
 └── README.md
 ```
 
