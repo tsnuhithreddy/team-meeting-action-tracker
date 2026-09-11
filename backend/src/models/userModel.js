@@ -31,14 +31,21 @@ class UserModel {
     return rows[0] || null;
   }
 
-  // Get all active users (for dropdowns when assigning tasks or adding participants)
-  static async findAll() {
-    const sql = `
+  // Get users. By default returns everyone (used by the Admin's user
+  // management page, which needs to see deactivated accounts too). Pass
+  // activeOnly: true for contexts like assignee/participant dropdowns,
+  // where showing a deactivated user would let someone assign work to or
+  // invite an account that can no longer log in.
+  static async findAll({ activeOnly = false } = {}) {
+    let sql = `
       SELECT u.id, u.full_name, u.email, u.is_active, r.name AS role
       FROM users u
       JOIN roles r ON u.role_id = r.id
-      ORDER BY u.full_name ASC
     `;
+    if (activeOnly) {
+      sql += ` WHERE u.is_active = TRUE `;
+    }
+    sql += ` ORDER BY u.full_name ASC `;
     const [rows] = await query(sql);
     return rows;
   }

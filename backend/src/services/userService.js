@@ -4,9 +4,9 @@ const AppError = require('../utils/appError');
 const { query } = require('../config/db');
 
 class UserService {
-  // Get all active users
-  static async getAllUsers() {
-    return await UserModel.findAll();
+  // Get users. filters.activeOnly narrows to active accounts only.
+  static async getAllUsers(filters = {}) {
+    return await UserModel.findAll(filters);
   }
 
   // Create new user account (Admin only)

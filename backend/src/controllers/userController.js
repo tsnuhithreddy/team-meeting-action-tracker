@@ -2,7 +2,8 @@ const UserService = require('../services/userService');
 const catchAsync = require('../utils/catchAsync');
 
 exports.getAllUsers = catchAsync(async (req, res) => {
-  const users = await UserService.getAllUsers();
+  const activeOnly = req.query.activeOnly === 'true';
+  const users = await UserService.getAllUsers({ activeOnly });
   res.status(200).json({
     success: true,
     count: users.length,
