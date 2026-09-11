@@ -157,6 +157,43 @@ describe('Task Management & Business Rules API', () => {
 
       expect(res.statusCode).toBe(403);
     });
+
+    it('should reject unassigning a task in the same request that marks it COMPLETED', async () => {
+      const res = await request(app)
+        .put(`/api/tasks/${createdTaskId}`)
+        .set('Authorization', `Bearer ${managerToken}`)
+        .send({
+          title: 'Attempting to unassign and complete at once',
+          assigneeId: null,
+          priority: 'HIGH',
+          status: 'COMPLETED',
+          dueDate: '2026-11-15'
+        });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.success).toBe(false);
+
+      const checkRes = await request(app)
+        .get(`/api/tasks/${createdTaskId}`)
+        .set('Authorization', `Bearer ${managerToken}`);
+      expect(checkRes.body.data.status).not.toBe('COMPLETED');
+    });
+
+    it('should still allow completing a task when an assignee already exists and assigneeId is simply omitted', async () => {
+      const res = await request(app)
+        .put(`/api/tasks/${createdTaskId}`)
+        .set('Authorization', `Bearer ${managerToken}`)
+        .send({
+          title: 'Completing without touching assignee',
+          priority: 'HIGH',
+          status: 'COMPLETED',
+          dueDate: '2026-11-15'
+        });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data.status).toBe('COMPLETED');
+      expect(res.body.data.assignee_id).toBe(3);
+    });
   });
 
   it('GET /api/tasks/my-tasks - should return only tasks assigned to Bob', async () => {

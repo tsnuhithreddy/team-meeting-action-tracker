@@ -92,10 +92,17 @@ class TaskService {
       throw new AppError('Task not found.', 404);
     }
 
-    const hasAssignee = Boolean(updateData.assigneeId || task.assignee_id);
+    // Determine whether the task WILL have an assignee after this update.
+    // Using `updateData.assigneeId || task.assignee_id` here would be wrong:
+    // JS's || can't tell "client explicitly sent assigneeId: null to unassign"
+    // apart from "client didn't mention assigneeId at all" — both look falsy.
+    // That let a request unassign a task and mark it COMPLETED in one call.
+    const assigneeIdProvided = Object.prototype.hasOwnProperty.call(updateData, 'assigneeId');
+    const effectiveAssigneeId = assigneeIdProvided ? updateData.assigneeId : task.assignee_id;
+    const hasAssignee = Boolean(effectiveAssigneeId);
     this.validateStatusTransition(task.status, updateData.status, user.role, hasAssignee);
 
-    await TaskModel.update(taskId, updateData);
+    await TaskModel.update(taskId, { ...updateData, assigneeId: effectiveAssigneeId });
 
     // Record audit log
     await query(
