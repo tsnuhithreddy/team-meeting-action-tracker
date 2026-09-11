@@ -38,7 +38,7 @@ export default function TasksPage() {
     loadTasks();
     apiRequest('/meetings').then((res) => { if (res.success) setMeetings(res.data); }).catch(() => {});
     if (user?.role !== 'EMPLOYEE') {
-      apiRequest('/users').then((res) => { if (res.success) setUsersList(res.data); }).catch(() => {});
+      apiRequest('/users?activeOnly=true').then((res) => { if (res.success) setUsersList(res.data); }).catch(() => {});
     }
   }, [user]);
 
