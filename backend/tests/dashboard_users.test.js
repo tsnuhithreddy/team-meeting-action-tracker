@@ -149,4 +149,39 @@ describe('Dashboard & User Management API', () => {
       expect(afterRes.body.message).toContain('deactivated');
     });
   });
+
+  describe('Deactivated users are excluded from dropdowns but not from Admin\'s user list', () => {
+    it('should exclude a deactivated user from ?activeOnly=true but keep them in the default list', async () => {
+      const uniqueEmail = `filter_test_${Date.now()}@tracker.com`;
+      const createRes = await request(app)
+        .post('/api/users')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          fullName: 'Filter Test User',
+          email: uniqueEmail,
+          password: 'SecureP@ss123',
+          roleId: 3
+        });
+      expect(createRes.statusCode).toBe(201);
+      const newUserId = createRes.body.data.id;
+
+      await request(app)
+        .delete(`/api/users/${newUserId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      const activeOnlyRes = await request(app)
+        .get('/api/users?activeOnly=true')
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(activeOnlyRes.statusCode).toBe(200);
+      expect(activeOnlyRes.body.data.some((u) => u.id === newUserId)).toBe(false);
+
+      const defaultRes = await request(app)
+        .get('/api/users')
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(defaultRes.statusCode).toBe(200);
+      const foundUser = defaultRes.body.data.find((u) => u.id === newUserId);
+      expect(foundUser).toBeDefined();
+      expect(foundUser.is_active).toBe(0);
+    });
+  });
 });
