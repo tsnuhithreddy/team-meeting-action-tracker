@@ -26,7 +26,10 @@ const meetingRules = [
   body('participantIds')
     .optional()
     .isArray()
-    .withMessage('participantIds must be an array of user IDs.')
+    .withMessage('participantIds must be an array of user IDs.'),
+  body('participantIds.*')
+    .isInt({ min: 1 })
+    .withMessage('Each participant ID must be a positive integer.')
 ];
 
 const validate = (req, res, next) => {

@@ -80,4 +80,20 @@ describe('Meeting Management API', () => {
     expect(res.body.success).toBe(false);
     expect(res.body.message).toContain('Access denied');
   });
+
+  it('POST /api/meetings - should reject a participantIds array containing non-integer or invalid values', async () => {
+    const res = await request(app)
+      .post('/api/meetings')
+      .set('Authorization', `Bearer ${managerToken}`)
+      .send({
+        title: 'Bad participant IDs',
+        meetingDate: '2026-10-25',
+        startTime: '10:00:00',
+        endTime: '11:00:00',
+        participantIds: ['hello', -20]
+      });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.success).toBe(false);
+  });
 });
