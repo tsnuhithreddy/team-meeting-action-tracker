@@ -7,17 +7,22 @@ async function initDatabase() {
   console.log('Initializing MySQL Database...');
 
   const dbName = process.env.DB_NAME || 'team_meeting_tracker';
-
-  // Step 1: Connect to MySQL server (without database selected yet)
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST || 'localhost',
-    port: Number(process.env.DB_PORT) || 3306,
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    multipleStatements: true
-  });
+  let connection;
 
   try {
+    // Step 1: Connect to MySQL server (without database selected yet).
+    // This lives inside the try block now — previously a connection failure
+    // (wrong password, unreachable host) bypassed our error handling
+    // entirely and crashed with a raw, unhandled-rejection stack trace
+    // instead of a clean message and a controlled nonzero exit code.
+    connection = await mysql.createConnection({
+      host: process.env.DB_HOST || 'localhost',
+      port: Number(process.env.DB_PORT) || 3306,
+      user: process.env.DB_USER || 'root',
+      password: process.env.DB_PASSWORD || '',
+      multipleStatements: true
+    });
+
     // Step 2: Create (if needed) and select the *configured* database name.
     // schema.sql/seed.sql no longer hardcode a database name themselves —
     // whatever database is selected here is what they'll apply to, so this
@@ -36,19 +41,25 @@ async function initDatabase() {
 
     // Step 4: Read and execute seed.sql
     const seedSql = fs.readFileSync(path.join(__dirname, 'seed.sql'), 'utf-8');
-    console.log('🌱 Executing seed.sql (inserting demo users & tasks)...');
+    console.log('Executing seed.sql (inserting demo users & tasks)...');
     await connection.query(seedSql);
-    console.log('✅ Seed data inserted successfully.');
+    console.log('Seed data inserted successfully.');
 
-    console.log('\n🎉 Database setup complete! Demo accounts available:');
+    console.log('\nDatabase setup complete! Demo accounts available:');
     console.log(' - Admin:    admin@tracker.com    (password: password123)');
     console.log(' - Manager:  alice@tracker.com    (password: password123)');
     console.log(' - Employee: bob@tracker.com      (password: password123)');
     console.log(' - Employee: charlie@tracker.com  (password: password123)\n');
   } catch (err) {
-    console.error('❌ Error during database initialization:', err.message);
+    console.error('Error during database initialization:', err.message);
+    // Without this, a failed init still exits 0 — CI or any calling script
+    // would think setup succeeded and proceed to run tests against a
+    // database that was never actually initialized.
+    process.exitCode = 1;
   } finally {
-    await connection.end();
+    if (connection) {
+      await connection.end();
+    }
   }
 }
 
