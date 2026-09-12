@@ -194,6 +194,86 @@ describe('Task Management & Business Rules API', () => {
       expect(res.body.data.status).toBe('COMPLETED');
       expect(res.body.data.assignee_id).toBe(3);
     });
+
+    it('should reject reassigning a task to a nonexistent user with a clean 404, not a raw DB error', async () => {
+      const res = await request(app)
+        .put(`/api/tasks/${createdTaskId}`)
+        .set('Authorization', `Bearer ${managerToken}`)
+        .send({
+          title: 'Reassign to nobody',
+          assigneeId: 999999,
+          priority: 'HIGH',
+          status: 'OPEN',
+          dueDate: '2026-11-15'
+        });
+
+      expect(res.statusCode).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).not.toContain('FOREIGN KEY');
+      expect(res.body.message).not.toContain('constraint');
+    });
+  });
+
+  describe('Assignee validation rejects deactivated users', () => {
+    let deactivatedUserId;
+
+    beforeAll(async () => {
+      // Need an ADMIN token to deactivate a user — log in fresh here rather
+      // than adding adminToken to the whole file's shared state.
+      const adminRes = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'admin@tracker.com', password: 'password123' });
+      const adminToken = adminRes.body.token;
+
+      const createRes = await request(app)
+        .post('/api/users')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          fullName: 'Soon Deactivated Assignee',
+          email: `deactivated_assignee_${Date.now()}@tracker.com`,
+          password: 'SecureP@ss123',
+          roleId: 3
+        });
+      deactivatedUserId = createRes.body.data.id;
+
+      await request(app)
+        .delete(`/api/users/${deactivatedUserId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+    });
+
+    it('should reject creating a task assigned to a deactivated user', async () => {
+      const res = await request(app)
+        .post('/api/tasks')
+        .set('Authorization', `Bearer ${managerToken}`)
+        .send({
+          meetingId: 1,
+          title: 'Assign to deactivated user',
+          assigneeId: deactivatedUserId,
+          priority: 'LOW',
+          dueDate: '2026-11-15'
+        });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain('deactivated');
+    });
+
+    it('should reject reassigning an existing task to a deactivated user via PUT', async () => {
+      const res = await request(app)
+        .put(`/api/tasks/${createdTaskId}`)
+        .set('Authorization', `Bearer ${managerToken}`)
+        .send({
+          title: 'Reassign to deactivated user',
+          assigneeId: deactivatedUserId,
+          priority: 'LOW',
+          status: 'OPEN',
+          dueDate: '2026-11-15'
+        });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain('deactivated');
+    });
   });
 
   it('GET /api/tasks/my-tasks - should return only tasks assigned to Bob', async () => {

@@ -5,6 +5,21 @@ const AppError = require('../utils/appError');
 const { query } = require('../config/db');
 
 class TaskService {
+  // Verify an assignee is a real, currently-active user before letting a
+  // task be assigned to them. Used by both create and update — without the
+  // is_active check, a deactivated user could still be assigned new work;
+  // without this existing at all in updateTask, reassigning to a nonexistent
+  // ID hit a raw foreign-key error (500) instead of a clean 4xx response.
+  static async validateAssignee(assigneeId) {
+    const assignee = await UserModel.findById(assigneeId);
+    if (!assignee) {
+      throw new AppError('Assigned user not found.', 404);
+    }
+    if (!assignee.is_active) {
+      throw new AppError('Cannot assign a task to a deactivated user.', 400);
+    }
+  }
+
   // Validate state transitions
   static validateStatusTransition(currentStatus, newStatus, userRole, hasAssignee) {
     if (currentStatus === newStatus) return;
@@ -28,12 +43,9 @@ class TaskService {
       throw new AppError('The associated meeting does not exist.', 404);
     }
 
-    // 2. If assignee provided, verify user exists
+    // 2. If assignee provided, verify user exists and is active
     if (taskData.assigneeId) {
-      const assignee = await UserModel.findById(taskData.assigneeId);
-      if (!assignee) {
-        throw new AppError('Assigned user not found.', 404);
-      }
+      await this.validateAssignee(taskData.assigneeId);
     }
 
     const taskId = await TaskModel.create({
@@ -99,6 +111,13 @@ class TaskService {
     // That let a request unassign a task and mark it COMPLETED in one call.
     const assigneeIdProvided = Object.prototype.hasOwnProperty.call(updateData, 'assigneeId');
     const effectiveAssigneeId = assigneeIdProvided ? updateData.assigneeId : task.assignee_id;
+
+    // If this update sets a real (non-null) assignee, verify they exist and
+    // are active — previously this was never checked here at all.
+    if (effectiveAssigneeId) {
+      await this.validateAssignee(effectiveAssigneeId);
+    }
+
     const hasAssignee = Boolean(effectiveAssigneeId);
     this.validateStatusTransition(task.status, updateData.status, user.role, hasAssignee);
 
