@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../services/api';
-import { Users, Plus, Shield, Check, X } from 'lucide-react';
+import { Users, Plus, Shield, Check, X, UserX } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function UsersPage() {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -11,6 +13,7 @@ export default function UsersPage() {
   const [password, setPassword] = useState('password123');
   const [roleId, setRoleId] = useState(3);
   const [error, setError] = useState('');
+  const [actionError, setActionError] = useState('');
 
   const loadUsers = () => {
     apiRequest('/users')
@@ -38,6 +41,19 @@ export default function UsersPage() {
     }
   };
 
+  const handleDeactivate = async (userId, userFullName) => {
+    const confirmed = window.confirm(`Deactivate ${userFullName}? They will immediately lose access, even with an active login session.`);
+    if (!confirmed) return;
+
+    setActionError('');
+    try {
+      await apiRequest(`/users/${userId}`, { method: 'DELETE' });
+      loadUsers();
+    } catch (err) {
+      setActionError(err.message);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -52,6 +68,12 @@ export default function UsersPage() {
         </button>
       </div>
 
+      {actionError && (
+        <div style={{ background: '#fee2e2', color: '#b91c1c', padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-md)', fontSize: '0.85rem' }}>
+          {actionError}
+        </div>
+      )}
+
       {loading ? (
         <div>Loading users...</div>
       ) : (
@@ -63,6 +85,7 @@ export default function UsersPage() {
                 <th style={{ padding: '0.75rem 1rem' }}>Email</th>
                 <th style={{ padding: '0.75rem 1rem' }}>Role</th>
                 <th style={{ padding: '0.75rem 1rem' }}>Status</th>
+                <th style={{ padding: '0.75rem 1rem' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -83,6 +106,22 @@ export default function UsersPage() {
                       {u.is_active ? <Check size={16} /> : <X size={16} />}
                       {u.is_active ? 'Active' : 'Inactive'}
                     </span>
+                  </td>
+                  <td style={{ padding: '0.75rem 1rem' }}>
+                    {u.is_active && u.id !== currentUser?.id ? (
+                      <button
+                        onClick={() => handleDeactivate(u.id, u.full_name)}
+                        className="btn btn-secondary"
+                        style={{ fontSize: '0.75rem', padding: '0.35rem 0.6rem', color: '#b91c1c' }}
+                      >
+                        <UserX size={14} />
+                        <span>Deactivate</span>
+                      </button>
+                    ) : (
+                      <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>
+                        {u.id === currentUser?.id ? '— (you)' : '—'}
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}
