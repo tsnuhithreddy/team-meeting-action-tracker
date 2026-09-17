@@ -1,8 +1,26 @@
 const MeetingModel = require('../models/meetingModel');
+const UserModel = require('../models/userModel');
 const AppError = require('../utils/appError');
 const { query } = require('../config/db');
 
 class MeetingService {
+  // Verify every participant ID corresponds to a real, active user before
+  // attempting to insert them. Without this, a nonexistent ID hit a raw
+  // foreign-key error (500, leaking table/constraint names), and a
+  // deactivated user's ID went through silently with no check at all.
+  static async validateParticipants(participantIds) {
+    if (!participantIds || participantIds.length === 0) return;
+    for (const id of participantIds) {
+      const participant = await UserModel.findById(id);
+      if (!participant) {
+        throw new AppError(`Participant user with ID ${id} not found.`, 404);
+      }
+      if (!participant.is_active) {
+        throw new AppError(`Cannot add deactivated user "${participant.full_name}" as a meeting participant.`, 400);
+      }
+    }
+  }
+
   // Validate time logic: end_time must strictly follow start_time
   static validateMeetingTimes(startTime, endTime) {
     if (startTime >= endTime) {
@@ -13,6 +31,7 @@ class MeetingService {
   // Create a new meeting
   static async createMeeting(meetingData, user) {
     this.validateMeetingTimes(meetingData.startTime, meetingData.endTime);
+    await this.validateParticipants(meetingData.participantIds);
 
     const meetingId = await MeetingModel.create({
       ...meetingData,

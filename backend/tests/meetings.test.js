@@ -96,4 +96,60 @@ describe('Meeting Management API', () => {
     expect(res.statusCode).toBe(400);
     expect(res.body.success).toBe(false);
   });
+
+  it('POST /api/meetings - should reject a participantIds array containing a nonexistent user ID with a clean 404, not a raw DB error', async () => {
+    const res = await request(app)
+      .post('/api/meetings')
+      .set('Authorization', `Bearer ${managerToken}`)
+      .send({
+        title: 'Nonexistent participant',
+        meetingDate: '2026-10-25',
+        startTime: '10:00:00',
+        endTime: '11:00:00',
+        participantIds: [999999]
+      });
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).not.toContain('FOREIGN KEY');
+    expect(res.body.message).not.toContain('constraint');
+  });
+
+  it('POST /api/meetings - should reject adding a deactivated user as a participant', async () => {
+    const adminRes = await request(app)
+      .post('/api/auth/login')
+      .send({ email: 'admin@tracker.com', password: 'password123' });
+    const adminToken = adminRes.body.token;
+
+    const uniqueEmail = `meeting_deactivated_${Date.now()}@tracker.com`;
+    const createRes = await request(app)
+      .post('/api/users')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        fullName: 'Soon Deactivated Participant',
+        email: uniqueEmail,
+        password: 'SecureP@ss123',
+        roleId: 3
+      });
+    const newUserId = createRes.body.data.id;
+
+    await request(app)
+      .delete(`/api/users/${newUserId}`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    const res = await request(app)
+      .post('/api/meetings')
+      .set('Authorization', `Bearer ${managerToken}`)
+      .send({
+        title: 'Deactivated participant',
+        meetingDate: '2026-10-25',
+        startTime: '10:00:00',
+        endTime: '11:00:00',
+        participantIds: [newUserId]
+      });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toContain('deactivated');
+  });
 });
