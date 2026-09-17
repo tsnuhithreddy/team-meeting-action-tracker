@@ -8,7 +8,7 @@ A full-stack team collaboration app for scheduling meetings, assigning action it
 
 - **Role-Based Access Control (RBAC)**: Secure multi-tier permissions for **ADMIN**, **MANAGER**, and **EMPLOYEE** roles.
 - **Meeting Management**: Schedule meetings with temporal consistency validation (`end_time > start_time`), dynamic participant rosters, and agenda tracking.
-- **Task & Action Item State Engine**: Enforce strict lifecycle transitions (`OPEN` → `IN_PROGRESS` → `BLOCKED` / `COMPLETED`), assignment constraints, and priority tracking.
+- **Task & Action Item Management**: Enforce assignment-based business rules (a task can't be marked COMPLETED without an assignee, only a Manager/Admin can reopen a completed task), plus priority tracking.
 - **Dynamic Overdue Calculations**: Automatic identification and visual highlighting of overdue deliverables.
 - **Auditing & Activity Trail**: Immutable activity logs tracking system actions and state transitions.
 - **Executive Analytics Dashboard**: Instant metrics on task progress, team bottlenecks, and overdue items.
@@ -62,6 +62,8 @@ Team Meeting And Action Tracker/
 ```
 
 ---
+
+
 
 ## 🚀 Quick Start (Local Setup)
 
