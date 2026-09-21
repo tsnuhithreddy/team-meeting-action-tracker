@@ -10,7 +10,7 @@ export default function UsersPage() {
   const [showModal, setShowModal] = useState(false);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('password123');
+  const [password, setPassword] = useState('Password@123');
   const [roleId, setRoleId] = useState(3);
   const [error, setError] = useState('');
   const [actionError, setActionError] = useState('');
