@@ -22,18 +22,54 @@ class TaskService {
 
   // Validate state transitions
   static validateStatusTransition(currentStatus, newStatus, userRole, hasAssignee) {
-    if (currentStatus === newStatus) return;
+  if (currentStatus === newStatus) return;
 
-    // Rule: Cannot mark as COMPLETED without an assignee
-    if (newStatus === 'COMPLETED' && !hasAssignee) {
-      throw new AppError('Cannot mark task as COMPLETED without an assigned team member.', 400);
+  // COMPLETED tasks can only be reopened to OPEN by Manager/Admin
+  if (currentStatus === 'COMPLETED') {
+    if (newStatus === 'OPEN' && (userRole === 'MANAGER' || userRole === 'ADMIN')) {
+      return;
     }
 
-    // Rule: Only Manager or Admin can reopen a completed task
-    if (currentStatus === 'COMPLETED' && newStatus === 'OPEN' && userRole === 'EMPLOYEE') {
-      throw new AppError('Only a Manager or Admin can reopen a completed task.', 403);
+    throw new AppError(
+      'Completed tasks can only be reopened to OPEN by a Manager or Admin.',
+      403
+    );
+  }
+
+  // OPEN can only move to IN_PROGRESS
+  if (currentStatus === 'OPEN' && newStatus !== 'IN_PROGRESS') {
+    throw new AppError(
+      'An OPEN task can only be moved to IN_PROGRESS.',
+      400
+    );
+  }
+
+  // IN_PROGRESS can move to BLOCKED or COMPLETED
+  if (currentStatus === 'IN_PROGRESS') {
+    if (newStatus !== 'BLOCKED' && newStatus !== 'COMPLETED') {
+      throw new AppError(
+        'An IN_PROGRESS task can only be moved to BLOCKED or COMPLETED.',
+        400
+      );
     }
   }
+
+  // BLOCKED can only move back to IN_PROGRESS
+  if (currentStatus === 'BLOCKED' && newStatus !== 'IN_PROGRESS') {
+    throw new AppError(
+      'A BLOCKED task can only be moved back to IN_PROGRESS.',
+      400
+    );
+  }
+
+  // A task must have an assignee before it can be completed
+  if (newStatus === 'COMPLETED' && !hasAssignee) {
+    throw new AppError(
+      'Cannot mark task as COMPLETED without an assigned team member.',
+      400
+    );
+  }
+}
 
   // Create task (Admin/Manager only)
   static async createTask(taskData, user) {
