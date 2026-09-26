@@ -8,9 +8,9 @@ ON DUPLICATE KEY UPDATE name=VALUES(name);
 -- Insert Demo Users (Password for all users is: password123)
 INSERT INTO users (id, full_name, email, password_hash, role_id) VALUES
 (1, 'System Admin', 'admin@tracker.com', '$2a$10$HiIzyo3/cf7nssc.zr2UWe.VoFVK9bjDBAL0trR2YbenWLALjImy.', 1),
-(2, 'Project Manager Alice', 'alice@tracker.com', '$2a$10$HiIzyo3/cf7nssc.zr2UWe.VoFVK9bjDBAL0trR2YbenWLALjImy.', 2),
-(3, 'Developer Bob', 'bob@tracker.com', '$2a$10$HiIzyo3/cf7nssc.zr2UWe.VoFVK9bjDBAL0trR2YbenWLALjImy.', 3),
-(4, 'QA Engineer Charlie', 'charlie@tracker.com', '$2a$10$HiIzyo3/cf7nssc.zr2UWe.VoFVK9bjDBAL0trR2YbenWLALjImy.', 3)
+(2, 'Project Manager Rahul', 'rahul@tracker.com', '$2a$10$HiIzyo3/cf7nssc.zr2UWe.VoFVK9bjDBAL0trR2YbenWLALjImy.', 2),
+(3, 'Developer Arjun', 'arjun@tracker.com', '$2a$10$HiIzyo3/cf7nssc.zr2UWe.VoFVK9bjDBAL0trR2YbenWLALjImy.', 3),
+(4, 'QA Engineer Rohit', 'rohit@tracker.com', '$2a$10$HiIzyo3/cf7nssc.zr2UWe.VoFVK9bjDBAL0trR2YbenWLALjImy.', 3)
 ON DUPLICATE KEY UPDATE password_hash=VALUES(password_hash), full_name=VALUES(full_name);
 
 -- Insert Sample Meeting
@@ -32,7 +32,7 @@ INSERT INTO tasks (id, meeting_id, title, description, assignee_id, priority, st
 (3, 1, 'Write API Integration Test Suite', 'Create Supertest test cases for RBAC and meeting endpoints.', 4, 'MEDIUM', 'OPEN', DATE_ADD(CURDATE(), INTERVAL 5 DAY), 2)
 ON DUPLICATE KEY UPDATE title=VALUES(title);
 
--- Second meeting used to test access-control scoping: Charlie is deliberately
+-- Second meeting used to test access-control scoping: Rohit is deliberately
 -- NOT a participant here and NOT assigned task 4.
 INSERT INTO meetings (id, title, description, meeting_date, start_time, end_time, location_or_link, created_by) VALUES
 (2, 'Client Escalation Review', 'Private discussion on the Acme Corp support escalation.', CURDATE(), '14:00:00', '15:00:00', 'Zoom', 2)
@@ -55,6 +55,6 @@ ON DUPLICATE KEY UPDATE comment_text=VALUES(comment_text);
 -- Insert Sample Activity Log
 INSERT INTO activity_logs (user_id, action, entity_type, entity_id, details) VALUES
 (2, 'CREATE_MEETING', 'MEETING', 1, 'Created Sprint 1 Planning meeting'),
-(2, 'CREATE_TASK', 'TASK', 1, 'Assigned schema task to Bob'),
-(2, 'CREATE_TASK', 'TASK', 2, 'Assigned JWT auth task to Bob'),
+(2, 'CREATE_TASK', 'TASK', 1, 'Assigned schema task to Arjun'),
+(2, 'CREATE_TASK', 'TASK', 2, 'Assigned JWT auth task to Arjun'),
 (3, 'UPDATE_STATUS', 'TASK', 2, 'Changed status to IN_PROGRESS');

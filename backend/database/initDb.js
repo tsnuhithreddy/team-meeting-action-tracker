@@ -47,9 +47,9 @@ async function initDatabase() {
 
     console.log('\nDatabase setup complete! Demo accounts available:');
     console.log(' - Admin:    admin@tracker.com    (password: password123)');
-    console.log(' - Manager:  alice@tracker.com    (password: password123)');
-    console.log(' - Employee: bob@tracker.com      (password: password123)');
-    console.log(' - Employee: charlie@tracker.com  (password: password123)\n');
+    console.log(' - Manager:  rahul@tracker.com    (password: password123)');
+    console.log(' - Employee: arjun@tracker.com      (password: password123)');
+    console.log(' - Employee: rohit@tracker.com  (password: password123)\n');
   } catch (err) {
     console.error('Error during database initialization:', err.message);
     // Without this, a failed init still exits 0 — CI or any calling script
