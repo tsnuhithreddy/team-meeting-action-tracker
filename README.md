@@ -4,6 +4,9 @@ A full-stack team collaboration app for scheduling meetings, assigning action it
 
 ---
 
+🔗 **Live Demo:** [http://13.207.117.100](http://13.207.117.100)
+
+
 ## 🌟 Key Features
 
 - **Role-Based Access Control (RBAC)**: Secure multi-tier permissions for **ADMIN**, **MANAGER**, and **EMPLOYEE** roles.
