@@ -4,7 +4,20 @@ A full-stack team collaboration app for scheduling meetings, assigning action it
 
 ---
 
-🔗 **Live Demo:** [http://13.207.117.100](http://13.207.117.100)
+## 🔗 Live Demo
+
+**[Open Team Meeting & Action Tracker](http://13.207.117.100)**
+
+### Demo Login Credentials
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@tracker.com | password123 |
+| Manager | rahul@tracker.com | password123 |
+| Employee | arjun@tracker.com | password123 |
+| Employee | rohit@tracker.com | password123 |
+
+> These are public demo accounts. Do not use them for sensitive or personal information.
 
 
 ## 🌟 Key Features
