@@ -14,12 +14,12 @@ describe('Dashboard & User Management API', () => {
 
     const managerRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'alice@tracker.com', password: 'password123' });
+      .send({ email: 'rahul@tracker.com', password: 'password123' });
     managerToken = managerRes.body.token;
 
     const employeeRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'bob@tracker.com', password: 'password123' });
+      .send({ email: 'arjun@tracker.com', password: 'password123' });
     employeeToken = employeeRes.body.token;
   });
 
@@ -105,7 +105,7 @@ describe('Dashboard & User Management API', () => {
 
   describe('Deactivation revokes access immediately, not just at next login', () => {
     it('should reject a still-cryptographically-valid token once the user is deactivated', async () => {
-      // 1. Admin creates a disposable test user (never touching Bob/Alice/Charlie,
+      // 1. Admin creates a disposable test user (never touching Arjun/Rahul/Rohit,
       //    since other test files depend on those accounts staying active)
       const uniqueEmail = `deactivate_test_${Date.now()}@tracker.com`;
       const createRes = await request(app)
