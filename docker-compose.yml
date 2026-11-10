@@ -42,7 +42,7 @@ services:
       DB_NAME: ${DB_NAME}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: 7d
-      CLIENT_URL: http://localhost:80
+      CLIENT_URL: http://13.207.117.100
     depends_on:
       db:
         condition: service_healthy
