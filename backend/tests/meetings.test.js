@@ -6,16 +6,16 @@ describe('Meeting Management API', () => {
   let employeeToken;
 
   beforeAll(async () => {
-    // 1. Log in as Manager (Alice)
+    // 1. Log in as Manager (Rahul)
     const managerRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'alice@tracker.com', password: 'password123' });
+      .send({ email: 'rahul@tracker.com', password: 'password123' });
     managerToken = managerRes.body.token;
 
-    // 2. Log in as Employee (Bob)
+    // 2. Log in as Employee (Arjun)
     const employeeRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'bob@tracker.com', password: 'password123' });
+      .send({ email: 'arjun@tracker.com', password: 'password123' });
     employeeToken = employeeRes.body.token;
   });
 
