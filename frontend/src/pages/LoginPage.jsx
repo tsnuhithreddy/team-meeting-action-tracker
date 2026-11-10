@@ -118,7 +118,7 @@ export default function LoginPage() {
           <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: '0.75rem', textAlign: 'center', textTransform: 'uppercase' }}>
             Quick Demo Accounts (password: password123)
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
             <button
               type="button"
               onClick={() => handleQuickLogin('admin@tracker.com')}
@@ -129,19 +129,28 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => handleQuickLogin('alice@tracker.com')}
+              onClick={() => handleQuickLogin('rahul@tracker.com')}
               className="btn btn-secondary"
               style={{ fontSize: '0.75rem', padding: '0.5rem 0.25rem' }}
             >
-              Manager
+              Manager - Rahul
             </button>
             <button
               type="button"
-              onClick={() => handleQuickLogin('bob@tracker.com')}
+              onClick={() => handleQuickLogin('arjun@tracker.com')}
               className="btn btn-secondary"
               style={{ fontSize: '0.75rem', padding: '0.5rem 0.25rem' }}
             >
-              Employee
+              Employee - Arjun
+            </button>
+            <button 
+              type="button"
+              onClick={() => handleQuickLogin('rohit@tracker.com')}
+              className="btn btn-secondary"
+              style={{ fontSize: '0.75rem', padding: '0.5rem 0.25rem' }}
+              >
+                Employee - Rohit
+
             </button>
           </div>
         </div>
