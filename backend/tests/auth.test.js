@@ -43,7 +43,7 @@ describe('Authentication & Authorization API', () => {
     const loginRes = await request(app)
       .post('/api/auth/login')
       .send({
-        email: 'alice@tracker.com',
+        email: 'rahul@tracker.com',
         password: 'password123'
       });
 
@@ -56,7 +56,7 @@ describe('Authentication & Authorization API', () => {
 
     expect(meRes.statusCode).toBe(200);
     expect(meRes.body.success).toBe(true);
-    expect(meRes.body.user.email).toBe('alice@tracker.com');
+    expect(meRes.body.user.email).toBe('rahul@tracker.com');
     expect(meRes.body.user.role).toBe('MANAGER');
   });
 });
