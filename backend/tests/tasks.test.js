@@ -3,25 +3,25 @@ const app = require('../src/app');
 
 describe('Task Management & Business Rules API', () => {
   let managerToken;
-  let employeeBobToken;
-  let employeeCharlieToken;
+  let employeeArjunToken;
+  let employeeRohitToken;
   let createdTaskId;
 
   beforeAll(async () => {
     const managerRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'alice@tracker.com', password: 'password123' });
+      .send({ email: 'rahul@tracker.com', password: 'password123' });
     managerToken = managerRes.body.token;
 
-    const bobRes = await request(app)
+    const arjunRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'bob@tracker.com', password: 'password123' });
-    employeeBobToken = bobRes.body.token;
+      .send({ email: 'arjun@tracker.com', password: 'password123' });
+    employeeArjunToken = arjunRes.body.token;
 
-    const charlieRes = await request(app)
+    const rohitRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'charlie@tracker.com', password: 'password123' });
-    employeeCharlieToken = charlieRes.body.token;
+      .send({ email: 'rohit@tracker.com', password: 'password123' });
+    employeeRohitToken = rohitRes.body.token;
   });
 
   it('POST /api/tasks - should allow Manager to create and assign a task', async () => {
@@ -47,7 +47,7 @@ describe('Task Management & Business Rules API', () => {
   it('POST /api/tasks - should forbid Employee from creating tasks (RBAC)', async () => {
     const res = await request(app)
       .post('/api/tasks')
-      .set('Authorization', `Bearer ${employeeBobToken}`)
+      .set('Authorization', `Bearer ${employeeArjunToken}`)
       .send({
         meetingId: 1,
         title: 'Unauthorized Task Creation',
@@ -58,10 +58,10 @@ describe('Task Management & Business Rules API', () => {
     expect(res.body.success).toBe(false);
   });
 
-  it('PATCH /api/tasks/:id/status - should allow assigned Employee (Bob) to update status to IN_PROGRESS', async () => {
+  it('PATCH /api/tasks/:id/status - should allow assigned Employee (Arjun) to update status to IN_PROGRESS', async () => {
     const res = await request(app)
       .patch(`/api/tasks/${createdTaskId}/status`)
-      .set('Authorization', `Bearer ${employeeBobToken}`)
+      .set('Authorization', `Bearer ${employeeArjunToken}`)
       .send({ status: 'IN_PROGRESS' });
 
     expect(res.statusCode).toBe(200);
@@ -69,10 +69,10 @@ describe('Task Management & Business Rules API', () => {
     expect(res.body.data.status).toBe('IN_PROGRESS');
   });
 
-  it('PATCH /api/tasks/:id/status - should forbid unassigned Employee (Charlie) from updating Bob’s task', async () => {
+  it('PATCH /api/tasks/:id/status - should forbid unassigned Employee (Rohit) from updating Arjun’s task', async () => {
     const res = await request(app)
       .patch(`/api/tasks/${createdTaskId}/status`)
-      .set('Authorization', `Bearer ${employeeCharlieToken}`)
+      .set('Authorization', `Bearer ${employeeRohitToken}`)
       .send({ status: 'COMPLETED' });
 
     expect(res.statusCode).toBe(403);
@@ -147,7 +147,7 @@ describe('Task Management & Business Rules API', () => {
     it('should still forbid Employee from calling PUT at all (RBAC unchanged)', async () => {
       const res = await request(app)
         .put(`/api/tasks/${createdTaskId}`)
-        .set('Authorization', `Bearer ${employeeBobToken}`)
+        .set('Authorization', `Bearer ${employeeArjunToken}`)
         .send({
           title: 'Employee should not reach this',
           priority: 'LOW',
@@ -276,10 +276,10 @@ describe('Task Management & Business Rules API', () => {
     });
   });
 
-  it('GET /api/tasks/my-tasks - should return only tasks assigned to Bob', async () => {
+  it('GET /api/tasks/my-tasks - should return only tasks assigned to Arjun', async () => {
     const res = await request(app)
       .get('/api/tasks/my-tasks')
-      .set('Authorization', `Bearer ${employeeBobToken}`);
+      .set('Authorization', `Bearer ${employeeArjunToken}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
@@ -288,34 +288,34 @@ describe('Task Management & Business Rules API', () => {
   });
 
   describe('Access control on tasks outside a user\'s meetings', () => {
-    it('GET /api/tasks/4 - should forbid Charlie from viewing a task in a meeting he is not part of', async () => {
+    it('GET /api/tasks/4 - should forbid Rohit from viewing a task in a meeting he is not part of', async () => {
       const res = await request(app)
         .get('/api/tasks/4')
-        .set('Authorization', `Bearer ${employeeCharlieToken}`);
+        .set('Authorization', `Bearer ${employeeRohitToken}`);
 
       expect(res.statusCode).toBe(403);
       expect(res.body.success).toBe(false);
     });
 
-    it('GET /api/tasks - should NOT include task 4 in Charlie\'s task list', async () => {
+    it('GET /api/tasks - should NOT include task 4 in Rohit\'s task list', async () => {
       const res = await request(app)
         .get('/api/tasks')
-        .set('Authorization', `Bearer ${employeeCharlieToken}`);
+        .set('Authorization', `Bearer ${employeeRohitToken}`);
 
       expect(res.statusCode).toBe(200);
       expect(res.body.data.some((t) => t.id === 4)).toBe(false);
     });
 
-    it('GET /api/tasks/4 - should allow Bob to view it (he is the assignee)', async () => {
+    it('GET /api/tasks/4 - should allow Arjun to view it (he is the assignee)', async () => {
       const res = await request(app)
         .get('/api/tasks/4')
-        .set('Authorization', `Bearer ${employeeBobToken}`);
+        .set('Authorization', `Bearer ${employeeArjunToken}`);
 
       expect(res.statusCode).toBe(200);
       expect(res.body.data.id).toBe(4);
     });
 
-    it('GET /api/tasks/4 - should allow Manager Alice to view it regardless of assignment', async () => {
+    it('GET /api/tasks/4 - should allow Manager Rahul to view it regardless of assignment', async () => {
       const res = await request(app)
         .get('/api/tasks/4')
         .set('Authorization', `Bearer ${managerToken}`);
