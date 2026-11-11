@@ -14,8 +14,8 @@ vi.mock('../services/api', () => ({
 
 const USERS = [
   { id: 1, full_name: 'System Admin', email: 'admin@tracker.com', role: 'ADMIN', is_active: 1 },
-  { id: 2, full_name: 'Project Manager Alice', email: 'alice@tracker.com', role: 'MANAGER', is_active: 1 },
-  { id: 4, full_name: 'QA Engineer Charlie', email: 'charlie@tracker.com', role: 'EMPLOYEE', is_active: 0 }
+  { id: 2, full_name: 'Project Manager Rahul', email: 'rahul@tracker.com', role: 'MANAGER', is_active: 1 },
+  { id: 4, full_name: 'QA Engineer Rohit', email: 'rohit@tracker.com', role: 'EMPLOYEE', is_active: 0 }
 ];
 
 describe('UsersPage — deactivate button (real component, jsdom)', () => {
@@ -28,11 +28,11 @@ describe('UsersPage — deactivate button (real component, jsdom)', () => {
   it('renders a Deactivate button for other active users', async () => {
     apiRequest.mockResolvedValueOnce({ success: true, data: USERS });
     render(<UsersPage />);
-    await waitFor(() => screen.getByText('Project Manager Alice'));
+    await waitFor(() => screen.getByText('Project Manager Rahul'));
 
-    const aliceRow = screen.getByText('Project Manager Alice').closest('tr');
-    expect(aliceRow.querySelector('button')).not.toBeNull();
-    expect(aliceRow.textContent).toContain('Deactivate');
+    const rahulRow = screen.getByText('Project Manager Rahul').closest('tr');
+    expect(rahulRow.querySelector('button')).not.toBeNull();
+    expect(rahulRow.textContent).toContain('Deactivate');
   });
 
   it('does NOT render a Deactivate button for the currently logged-in user (self-guard)', async () => {
@@ -48,10 +48,10 @@ describe('UsersPage — deactivate button (real component, jsdom)', () => {
   it('does NOT render a Deactivate button for an already-inactive user', async () => {
     apiRequest.mockResolvedValueOnce({ success: true, data: USERS });
     render(<UsersPage />);
-    await waitFor(() => screen.getByText('QA Engineer Charlie'));
+    await waitFor(() => screen.getByText('QA Engineer Rohit'));
 
-    const charlieRow = screen.getByText('QA Engineer Charlie').closest('tr');
-    expect(charlieRow.textContent).not.toContain('Deactivate');
+    const rohitRow = screen.getByText('QA Engineer Rohit').closest('tr');
+    expect(rohitRow.textContent).not.toContain('Deactivate');
   });
 
   it('asks for confirmation, then calls DELETE /users/:id, then reloads the list', async () => {
@@ -61,14 +61,14 @@ describe('UsersPage — deactivate button (real component, jsdom)', () => {
       .mockResolvedValueOnce({ success: true, data: USERS });
 
     render(<UsersPage />);
-    await waitFor(() => screen.getByText('Project Manager Alice'));
+    await waitFor(() => screen.getByText('Project Manager Rahul'));
 
-    const aliceRow = screen.getByText('Project Manager Alice').closest('tr');
-    const button = aliceRow.querySelector('button');
+    const rahulRow = screen.getByText('Project Manager Rahul').closest('tr');
+    const button = rahulRow.querySelector('button');
     fireEvent.click(button);
 
     expect(window.confirm).toHaveBeenCalledTimes(1);
-    expect(window.confirm.mock.calls[0][0]).toContain('Project Manager Alice');
+    expect(window.confirm.mock.calls[0][0]).toContain('Project Manager Rahul');
 
     await waitFor(() => {
       expect(apiRequest).toHaveBeenCalledWith('/users/2', { method: 'DELETE' });
@@ -84,10 +84,10 @@ describe('UsersPage — deactivate button (real component, jsdom)', () => {
     window.confirm = vi.fn(() => false);
 
     render(<UsersPage />);
-    await waitFor(() => screen.getByText('Project Manager Alice'));
+    await waitFor(() => screen.getByText('Project Manager Rahul'));
 
-    const aliceRow = screen.getByText('Project Manager Alice').closest('tr');
-    fireEvent.click(aliceRow.querySelector('button'));
+    const rahulRow = screen.getByText('Project Manager Rahul').closest('tr');
+    fireEvent.click(rahulRow.querySelector('button'));
 
     expect(window.confirm).toHaveBeenCalledTimes(1);
     expect(apiRequest).toHaveBeenCalledTimes(1);
@@ -99,10 +99,10 @@ describe('UsersPage — deactivate button (real component, jsdom)', () => {
       .mockRejectedValueOnce(new Error('Access denied. Only an Admin can perform this action.'));
 
     render(<UsersPage />);
-    await waitFor(() => screen.getByText('Project Manager Alice'));
+    await waitFor(() => screen.getByText('Project Manager Rahul'));
 
-    const aliceRow = screen.getByText('Project Manager Alice').closest('tr');
-    fireEvent.click(aliceRow.querySelector('button'));
+    const rahulRow = screen.getByText('Project Manager Rahul').closest('tr');
+    fireEvent.click(rahulRow.querySelector('button'));
 
     await waitFor(() => {
       expect(screen.getByText('Access denied. Only an Admin can perform this action.')).toBeTruthy();

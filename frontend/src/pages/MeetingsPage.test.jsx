@@ -22,7 +22,7 @@ const MEETINGS = [
     end_time: '11:00:00',
     location_or_link: 'Zoom',
     created_by: 2,
-    creator_name: 'Project Manager Alice',
+    creator_name: 'Project Manager Rahul',
     total_tasks: 3,
     total_participants: 4
   },
@@ -47,7 +47,7 @@ describe('MeetingsPage — edit meeting (real component, jsdom)', () => {
     window.confirm = vi.fn(() => true);
   });
 
-  it('shows an Edit button for the meeting creator (Manager Alice)', async () => {
+  it('shows an Edit button for the meeting creator (Manager Rahul)', async () => {
     useAuth.mockReturnValue({ user: { id: 2, role: 'MANAGER' } });
     apiRequest
       .mockResolvedValueOnce({ success: true, data: MEETINGS })
