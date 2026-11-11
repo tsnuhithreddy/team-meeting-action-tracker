@@ -110,7 +110,7 @@ export default function TasksPage() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700 }}>Task Kanban Board</h1>
+          <h1 style={{ fontSize: '1.75rem', fontWeight: 700 }}>Task Board</h1>
           <p style={{ color: 'var(--color-text-muted)' }}>Track action items and state progression.</p>
         </div>
 
