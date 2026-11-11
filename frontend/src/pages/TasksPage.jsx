@@ -174,7 +174,17 @@ export default function TasksPage() {
 
                       <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '0.75rem' }}>
                         <div>👤 Assignee: <strong>{t.assignee_name || 'Unassigned'}</strong></div>
-                        <div>📅 Due: <strong>{t.due_date}</strong></div>
+                        <div>
+                          📅 Due:{' '}
+                          <strong>
+                            {new Date(t.due_date).toLocaleDateString('en-IN', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric',
+                              timeZone: 'UTC'
+                            })}
+                          </strong>
+                        </div>
                       </div>
 
                       {/* Status Selector */}
